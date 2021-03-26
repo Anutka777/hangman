@@ -13,10 +13,6 @@ module Output
     puts "Letters you already picked: #{@user_letter_picks.join(', ')}"
   end
 
-  def mes_start
-    puts 'Start game'
-  end
-
   def mes_enter_letter
     puts 'Enter letter'
   end
@@ -106,14 +102,13 @@ class Game
 
   def save_game
     saved_state = YAML.dump(self)
-    p saved_state
-    File.open('/home/anna/Документы/Programming/Ruby/hangman/save.yaml', 'w') do |file|
+    File.open('save.yaml', 'w') do |file|
       file.puts saved_state
     end
+    puts 'Your progress was succsessfully saved'
   end
 
   def play
-    mes_start
     until out_of_tries?
       break mes_win if word_was_guessed?
 
@@ -124,10 +119,31 @@ class Game
         mes_no_such_letter
       end
     end
+    puts "The word was: \e[35m#{@word_to_guess.join('')}\e[0m"
     mes_game_over
   end
 end
 
-game = Game.new
-p game.word_to_guess
-game.play
+# Start a game
+module Hangman
+  def self.play
+    puts 'Enter 0 if you want to start a new game'
+    puts 'Enter 1 if you want to load the previous game'
+    input = gets.chomp until input =~ /[01]/
+    case input
+    when '0'
+      game = Game.new
+    when '1'
+      if File.exist?('save.yaml')
+        file = File.open('save.yaml', 'r')
+        game = YAML.load(file)
+      else
+        puts 'No save file was found. Starting new game instead.'
+        game = Game.new
+      end
+    end
+    game.play
+  end
+end
+
+Hangman.play
