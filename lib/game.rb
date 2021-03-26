@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'yaml'
+
 # All display output
 module Output
   def display_user_guess(user_guess)
@@ -9,6 +11,10 @@ module Output
 
   def display_user_letter_picks
     puts "Letters you already picked: #{@user_letter_picks.join(', ')}"
+  end
+
+  def mes_start
+    puts 'Start game'
   end
 
   def mes_enter_letter
@@ -55,17 +61,19 @@ class Game
   def ask_letter
     display_user_letter_picks
     # mes_enter_letter
-    input = gets.chomp.downcase until validate_user_input(input)
+    input = gets.chomp.downcase until validate_user_guess_input(input)
     input
   end
 
-  def validate_user_input(input)
+  def validate_user_guess_input(input)
     if input.nil?
       mes_enter_letter
-    elsif @user_letter_picks.include?(input)
-      puts 'You already picked this letter. Choose another one.'
+    elsif input == 'save'
+      save_game
     elsif input !~ /^[a-z]$/
       puts 'Check your input. It should be a single letter.'
+    elsif @user_letter_picks.include?(input)
+      puts 'You already picked this letter. Choose another one.'
     else
       @user_letter_picks << input
     end
@@ -73,6 +81,7 @@ class Game
 
   def check_letter_in_word(word_to_guess, ask_letter)
     successful_check = 0
+    successful_check += 1 if ask_letter == 'save'
     word_to_guess.each_with_index do |letter, index|
       if ask_letter == letter
         @user_guess = update_user_guess(letter, index)
@@ -95,7 +104,16 @@ class Game
     @word_to_guess == @user_guess
   end
 
+  def save_game
+    saved_state = YAML.dump(self)
+    p saved_state
+    File.open('/home/anna/Документы/Programming/Ruby/hangman/save.yaml', 'w') do |file|
+      file.puts saved_state
+    end
+  end
+
   def play
+    mes_start
     until out_of_tries?
       break mes_win if word_was_guessed?
 
