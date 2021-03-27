@@ -2,13 +2,15 @@
 
 # All display output
 module Output
+  # private
+
   def display_user_guess(user_guess)
     puts user_guess.join(' ')
     puts ''
   end
 
   def display_user_letter_picks
-    puts "Letters you already picked: #{@user_letter_picks.join(', ')}"
+    puts "Letters you already picked: #{user_letter_picks.join(', ')}"
   end
 
   def mes_enter_letter
@@ -17,7 +19,7 @@ module Output
 
   def mes_no_such_letter
     puts "\e[31mNo such letter\e[0m"
-    puts "\e[31mTries left: #{@tries}\e[0m"
+    puts "\e[31mTries left: #{tries}\e[0m"
     puts ''
   end
 

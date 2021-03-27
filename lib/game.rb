@@ -7,14 +7,30 @@ require 'yaml'
 class Game
   include Output
   attr_reader :word_to_guess
-  attr_accessor :user_guess
+  attr_accessor :user_guess, :user_letter_picks, :tries
 
   def initialize
     @word_to_guess = chose_word_to_guess
-    @user_guess = Array.new(@word_to_guess.length, '_')
+    @user_guess = Array.new(word_to_guess.length, '_')
     @user_letter_picks = []
     @tries = 12
   end
+
+  def play
+    until out_of_tries?
+      break mes_win if word_was_guessed?
+
+      display_user_guess(user_guess)
+      sleep 1
+      if check_letter_in_word(word_to_guess, ask_letter).zero?
+        self.tries -= 1
+        mes_no_such_letter
+      end
+    end
+    game_over
+  end
+
+  private
 
   def chose_word_to_guess
     words_pool = []
@@ -28,21 +44,28 @@ class Game
   def ask_letter
     display_user_letter_picks
     # mes_enter_letter
-    input = gets.chomp.downcase until validate_user_guess_input(input)
+    input = gets.chomp.downcase until get_valid_letter(input)
     input
   end
 
-  def validate_user_guess_input(input)
-    if input.nil?
-      mes_enter_letter
-    elsif input == 'save'
-      save_game
-    elsif input !~ /^[a-z]$/
-      puts 'Check your input. It should be a single letter.'
-    elsif @user_letter_picks.include?(input)
+  def get_valid_letter(input)
+    if user_letter_picks.include?(input)
       puts 'You already picked this letter. Choose another one.'
     else
-      @user_letter_picks << input
+      validate_guess_input(input)
+    end
+  end
+
+  def validate_guess_input(input)
+    case input
+    when nil
+      mes_enter_letter
+    when 'save'
+      save_game
+    when /^(?![a-z]$)/
+      puts 'Check your input. It should be a single letter.'
+    else
+      user_letter_picks << input
     end
   end
 
@@ -51,7 +74,7 @@ class Game
     successful_check += 1 if ask_letter == 'save'
     word_to_guess.each_with_index do |letter, index|
       if ask_letter == letter
-        @user_guess = update_user_guess(letter, index)
+        update_user_guess(letter, index)
         successful_check += 1
       end
     end
@@ -59,16 +82,16 @@ class Game
   end
 
   def update_user_guess(letter, index)
-    @user_guess[index] = letter
-    @user_guess
+    user_guess[index] = letter
+    user_guess
   end
 
   def out_of_tries?
-    @tries <= 0
+    tries <= 0
   end
 
   def word_was_guessed?
-    @word_to_guess == @user_guess
+    word_to_guess == user_guess
   end
 
   def save_game
@@ -79,18 +102,8 @@ class Game
     puts 'Your progress was succsessfully saved'
   end
 
-  def play
-    until out_of_tries?
-      break mes_win if word_was_guessed?
-
-      display_user_guess(user_guess)
-      sleep 1
-      if check_letter_in_word(word_to_guess, ask_letter).zero?
-        @tries -= 1
-        mes_no_such_letter
-      end
-    end
-    puts "The word was: \e[35m#{@word_to_guess.join('')}\e[0m"
+  def game_over
+    puts "The word was: \e[35m#{word_to_guess.join('')}\e[0m"
     mes_game_over
   end
 end
