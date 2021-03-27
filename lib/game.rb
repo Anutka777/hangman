@@ -27,7 +27,7 @@ class Game
         mes_no_such_letter
       end
     end
-    game_over
+    game_over unless word_was_guessed?
   end
 
   private
@@ -43,7 +43,6 @@ class Game
 
   def ask_letter
     display_user_letter_picks
-    # mes_enter_letter
     input = gets.chomp.downcase until get_valid_letter(input)
     input
   end

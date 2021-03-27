@@ -2,7 +2,7 @@
 
 # All display output
 module Output
-  # private
+  private
 
   def display_user_guess(user_guess)
     puts user_guess.join(' ')
@@ -14,7 +14,7 @@ module Output
   end
 
   def mes_enter_letter
-    puts 'Enter letter'
+    puts 'Enter letter or type save for saving a game'
   end
 
   def mes_no_such_letter
@@ -28,6 +28,7 @@ module Output
   end
 
   def mes_win
+    puts "\e[35m#{word_to_guess.join('').upcase}\e[0m!"
     puts 'You guessed right and won the game!'
   end
 end
